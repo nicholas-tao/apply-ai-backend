@@ -9,6 +9,7 @@ from mail import new_email, existing_email, new_jobs
 import hash
 import random
 import time
+from resume_parser import ResumeParser
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -63,8 +64,7 @@ def resume_upload():
             original_name = secure_filename(file.filename)
             file_name = uuid.uuid4().hex + '.pdf'
             file.save('uploads/' + file_name)
-            # run pdf parser and get JSON data
-            resume_data = {}
+            resume_data = ResumeParser('uploads/' + file_name).extract_data()
             file_url = filestorage.upload(file_name)
             add_to_user(uid, original_name, file_url, resume_data)
             return jsonify({'success': True, 'data': resume_data})
@@ -103,4 +103,4 @@ def get_jobs():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5002)
