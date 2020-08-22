@@ -70,25 +70,26 @@ def resume_upload():
             return jsonify({'success': True, 'data': resume_data})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
-@app.route('/update', methods=['POST', 'GET'])
+@app.route('/update', methods=['POST'])
 def update_resume():
-    if request.method == 'POST':
-        huid = request.form.get('uid', default='nope')
-        uid = hash.database_safe_hash(huid)
-        data = request.form.get('data', default={})
-        if get_user(uid):
-            update_user(uid, data)
-            return jsonify({'success': True, 'message': 'User data has been updated.'})
-        return jsonify({'success': False, 'message': 'Invalid user ID.'})
-    else:
-        huid = request.args.get('uid', default='nope')
-        uid = hash.database_safe_hash(huid)
-        if get_user(uid):
-            resume_data = get_resume_data(uid)
-            if resume_data:
-                return jsonify({'success': True, 'data': resume_data})
-            return jsonify({'success': False})
-        return jsonify({'success': False, 'message': 'Invalid user ID.'})
+    huid = request.form.get('uid', default='nope')
+    uid = hash.database_safe_hash(huid)
+    data = request.form.get('data', default={})
+    if get_user(uid):
+        update_user(uid, data)
+        return jsonify({'success': True, 'message': 'User data has been updated.'})
+    return jsonify({'success': False, 'message': 'Invalid user ID.'})
+
+@app.route('/resume', methods=['GET'])
+def get_resume():
+    huid = request.args.get('uid', default='nope')
+    uid = hash.database_safe_hash(huid)
+    if get_user(uid):
+        resume_data = get_resume_data(uid)
+        if resume_data:
+            return jsonify({'success': True, 'data': resume_data})
+        return jsonify({'success': False})
+    return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
@@ -98,7 +99,6 @@ def get_jobs():
         # parse stuff whatever and return job stuff
         return jsonify({'success': True})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
-
         
 
 

@@ -17,7 +17,7 @@ def new_email(email, pin):
     print(resp.text)
 
 def existing_email(email, huid):
-    url = "https://apply-ai.web.app/update?uid={}".format(huid)
+    url = "https://apply-ai.web.app/resume?uid={}".format(huid)
     resp = requests.post(
         "https://api.mailgun.net/v3/apply-ai.online/messages",
         auth=("api", open("mail-key.txt","r").read()),
@@ -34,7 +34,7 @@ def existing_email(email, huid):
     print(resp.text)
 
 def new_jobs(email, huid):
-    url = "https://apply-ai.web.app/update?uid={}".format(huid)
+    url = "https://apply-ai.web.app/resume?uid={}".format(huid)
     resp = requests.post(
         "https://api.mailgun.net/v3/apply-ai.online/messages",
         auth=("api", open("mail-key.txt","r").read()),
