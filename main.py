@@ -4,16 +4,14 @@ from werkzeug.utils import secure_filename
 import uuid
 import filestorage
 import re
-from db import get_user, create_user, check_for_email
-from email import new_email, existing_email
-
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'docx', 'doc', 'rtf'}
+from db import get_user, create_user, check_for_email, add_to_user, update_user, get_resume_data, new_user, validate_user
+from mail import new_email, existing_email, new_jobs
+import hash
+import random
+import time
 
 app = Flask(__name__)
 cors = CORS(app)
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def check(email):
     regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
@@ -21,7 +19,7 @@ def check(email):
 
 @app.route('/')
 def home():
-    return redirect('https://google.com') # this will be the frontend URL
+    return redirect('https://apply-ai.online/')
 
 @app.route('/start', methods=['GET', 'POST'])
 def get_email():
@@ -29,22 +27,24 @@ def get_email():
         email = request.args.get('email', default='invalid email')
         if check(email):
             uid = check_for_email(email)
-            if uid:
-                huid = uid
+            if get_user(uid):
+                huid = hash.user_safe_hash(uid)
                 existing_email(email, huid)
-                return jsonify({'success': False, 'message': 'This email address is already in use. We have sent you an email to log in to access your info'})
-            # send email with random 6 digit code
-            # add email and 6 digit code to db
+                return jsonify({'success': False, 'message': 'This email address is already in use. We have \
+                    sent you an email to log in to access your info'})
+            pin = ''.join(random.choice('0123456789') for _ in range(6))
+            new_email(email, pin)
+            new_user(email, pin)
             return jsonify({'success': True, 'message': 'Please enter the 6-digit email sent to you to continue.'})
         else:
             return jsonify({'success': False, 'message': 'Please enter a valid email address'})
     else:
         email = request.form.get('email', default="nope")
         pin = request.form.get('pin', default=123456)
-        if email: # check db for email with matching pin
-            uid = uuid.uuid4().hex # user's unique identifier
-            # add uid to database with email element
-            huid = uid # hash it and stuff before sending it back to the user
+        if validate_user(email, pin):
+            uid = uuid.uuid4().hex
+            create_user(uid, email)
+            huid = hash.user_safe_hash(uid)
             return jsonify({'success': True, 'uid': huid})
         return jsonify({'success': False, 'message': '6 digit pin does not match. Please try again.'})
 
@@ -52,46 +52,50 @@ def get_email():
 @app.route('/upload', methods=['POST'])
 def resume_upload():
     huid = request.form.get('uid', default='nope')
-    uid = huid # unhash huid
-    if uid: # if user in user db with mathcing uid
+    uid = hash.database_safe_hash(huid)
+    if get_user(uid):
         if 'file' not in request.files:
             return jsonify({'success': False, 'message': 'No files uploaded'})
         file = request.files['file']
         if file.filename == '':
             return jsonify({'success': False, 'message': 'Unable to detect filetype'})
-        if file and allowed_file(file.filename):
-            file_name = uuid.uuid4().hex + file.filename.split('.')[-1]
+        if file and file.filename.split('.')[-1].lower() == 'pdf':
+            original_name = secure_filename(file.filename)
+            file_name = uuid.uuid4().hex + '.pdf'
             file.save('uploads/' + file_name)
             # run pdf parser and get JSON data
             resume_data = {}
             file_url = filestorage.upload(file_name)
-            # update db with uid, file_name, resume_data, file_url
+            add_to_user(uid, original_name, file_url, resume_data)
             return jsonify({'success': True, 'data': resume_data})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
 @app.route('/update', methods=['POST', 'GET'])
 def update_resume():
     if request.method == 'POST':
-        uid = request.form.get('uid', default='nope')
+        huid = request.form.get('uid', default='nope')
+        uid = hash.database_safe_hash(huid)
         data = request.form.get('data', default={})
-        if uid: # if uid in user db
-            # update the user data in db
+        if get_user(uid):
+            update_user(uid, data)
             return jsonify({'success': True, 'message': 'User data has been updated.'})
         return jsonify({'success': False, 'message': 'Invalid user ID.'})
     else:
         huid = request.args.get('uid', default='nope')
-        uid = huid # unhash huid
-        if uid: # if uid in user db
-            # parse stuff whatever
-            return jsonify({'success': True})
+        uid = hash.database_safe_hash(huid)
+        if get_user(uid):
+            resume_data = get_resume_data(uid)
+            if resume_data:
+                return jsonify({'success': True, 'data': resume_data})
+            return jsonify({'success': False})
         return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
     huid = request.args.get('uid', default='nope')
-    uid = huid # unhash huid
-    if uid: # if uid in user db
-        # parse stuff whatever
+    uid = hash.database_safe_hash(huid)
+    if get_user(uid):
+        # parse stuff whatever and return job stuff
         return jsonify({'success': True})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
