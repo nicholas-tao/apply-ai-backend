@@ -99,23 +99,23 @@ def match_jobs(uid):
             top_picks.append(jobs[job])
     return top_picks
 
-class JobScraper:
-    def init(self):
-        self.link_list = []
-    def add_job(self, link, title, location, description, company):
-        self.link_list.append(link)
-        safe_link = base64.b64encode(link.encode("ascii")).decode("ascii")
-        data = {
-            "link": link,
-            "title": title,
-            "location": location,
-            "description": description,
-            "company": company
-        }
-        db().child('jobs').child(safe_link).set(data)
-    def remove_jobs(self):
+def add_job(link, title, location, description, company):
+    safe_link = base64.b64encode(link.encode("ascii")).decode("ascii")
+    data = {
+        "link": link,
+        "title": title,
+        "location": location,
+        "description": description,
+        "company": company
+    }
+    db().child('jobs').child(safe_link).set(data)
+
+def remove_jobs(new_jobs):
+    try:
         jobs = get_db()['jobs']
         for job in jobs:
-            if jobs[job]['link'] not in self.link_list:
+            if jobs[job]['link'] not in new_jobs:
                 safe_link = base64.b64encode(jobs[job]['link'].encode("ascii")).decode("ascii")
                 db().child('jobs').child(safe_link).remove()
+    except:
+        pass

@@ -4,5 +4,5 @@ import mail
 def submit(uid, link):
     users = db.get_db()['users']
     for user in users:
-        if user['uid'] == uid:
-            mail.applied(user['email'], link)
+        if users[user]['uid'] == uid:
+            mail.applied(users[user]['email'], link)

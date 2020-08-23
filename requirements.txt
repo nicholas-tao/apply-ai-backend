@@ -1,4 +1,6 @@
+beautifulsoup4==4.9.1
 blis==0.4.1
+bs4==0.0.1
 cachetools==4.1.1
 catalogue==1.0.0
 certifi==2020.6.20
@@ -46,6 +48,7 @@ requests==2.24.0
 requests-toolbelt==0.7.0
 rsa==4.6
 six==1.15.0
+soupsieve==2.0.1
 spacy==2.3.2
 srsly==1.0.2
 thinc==7.4.1

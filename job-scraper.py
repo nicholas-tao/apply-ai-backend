@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-from db import JobScraper
+from db import add_job, remove_jobs
 
 class Scraper:
 
@@ -52,10 +52,11 @@ class Scraper:
     def get_jobs(self):
         self.generate_url()
         self.search_jobs()
-        return json.dumps(self.jobs, indent=4)
+        return self.jobs
 
-js = JobScraper()
-jobs = Scraper().get_jobs()
-for job in jobs:
-    js.add_job(job['link'], job['title'], job['location'], job['description'], job['company'])
-js.remove_jobs()
+
+new_jobs = []
+for job in Scraper().get_jobs():
+    add_job(job['link'], job['title'], job['location'], job['description'], job['company'])
+    new_jobs.append(job['link'])
+remove_jobs(new_jobs)
