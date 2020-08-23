@@ -111,7 +111,8 @@ def auto_apply():
     links = request.form.get('links', default='google.com').split(', ')
     if get_user(uid):
         for link in links:
-            apply.submit(uid, link)
+            if link != '':
+                apply.submit(uid, link)
         plural = '' if len(links) == 1 else 's'
         return jsonify({'success': True, 'message': 'You have successfully applied to {} job{}.'.format(len(links), plural)})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
