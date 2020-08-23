@@ -128,6 +128,8 @@ class ResumeParser:
                     position['dates'] = '{} - {}'.format(start, end)
                 except KeyError:
                     position['dates'] = ""
+                positions.append(position)
+            return positions
         except KeyError:
             return {'jobs': None}
 
@@ -142,12 +144,36 @@ class ResumeParser:
 
     def extract_data(self):
         self.read_resume()
-        self.resume['name'] = self.extract_name()
-        self.resume['phone_number'] =self.extract_phone_number()
-        self.resume['email'] = self.extract_email()
-        self.resume['degree'] = self.extract_degree()
-        self.resume['locations'] = self.extract_locations()
-        self.resume['skills'] = self.extract_skills()
-        self.resume['jobs'] = self.extract_jobs()
-        self.resume['socials'] = self.extract_socials()
+        try:
+            self.resume['name'] = self.extract_name()
+        except:
+            self.resume['name'] = ''
+        try:
+            self.resume['phone_number'] =self.extract_phone_number()
+        except:
+            self.resume['phone_number'] = ''
+        try:
+            self.resume['email'] = self.extract_email()
+        except:
+            self.resume['email'] = ''
+        try:
+            self.resume['degree'] = self.extract_degree()
+        except:
+            self.resume['degree'] = ''
+        try:
+            self.resume['locations'] = self.extract_locations()
+        except:
+            self.resume['locations'] = ''
+        try:
+            self.resume['skills'] = self.extract_skills()
+        except:
+            self.resume['skills'] = ''
+        try:
+            self.resume['jobs'] = self.extract_jobs()
+        except:
+            self.resume['jobs'] = ''
+        try:
+            self.resume['socials'] = self.extract_socials()
+        except:
+            self.resume['socials'] = ''
         return json.dumps(self.resume, indent=4)
