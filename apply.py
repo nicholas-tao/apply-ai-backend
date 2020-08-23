@@ -1,5 +1,8 @@
 import db
+import mail
 
 def submit(uid, link):
-    user = db.get_resume_data(uid)
-    
+    users = db.get_db()['users']
+    for user in users:
+        if user['uid'] == uid:
+            mail.applied(user['email'], link)

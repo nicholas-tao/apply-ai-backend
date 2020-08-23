@@ -4,6 +4,7 @@ from spacy.matcher import Matcher
 import re
 import json
 from nltk.corpus import stopwords
+import requests
 
 
 class ResumeParser:
@@ -17,6 +18,7 @@ class ResumeParser:
 
     def read_resume(self):
         file_obj = open(self.resume_file, 'rb')
+        self.fo = file_obj
         pdf_reader = PyPDF2.PdfFileReader(file_obj)
         for page_number in range(pdf_reader.numPages):
             page_obj = pdf_reader.getPage(page_number)
@@ -103,8 +105,31 @@ class ResumeParser:
         return organizations
 
     def extract_jobs(self):
+        url = "https://jobs.lever.co/parseResume"
+        payload = {}
+        files = [
+        ('resume', self.fo)
+        ]
+        headers= {}
 
-        return {'jobs': None}
+        response = requests.request("POST", url, headers=headers, data = payload, files = files)
+
+        try:
+            jobs = response.json()['positions']
+            positions = []
+            for job in jobs:
+                position = {}
+                position['title'] = job['title']
+                position['company'] = job['org']
+                position['description'] = job['summary']
+                try:
+                    start = "{}-{}".format(job['start']['year'], job['start']['month'])
+                    end = "{}-{}".format(job['end']['year'], job['end']['month'])
+                    position['dates'] = '{} - {}'.format(start, end)
+                except KeyError:
+                    position['dates'] = ""
+        except KeyError:
+            return {'jobs': None}
 
     def extract_socials(self):
         socials = dict()

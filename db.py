@@ -2,6 +2,7 @@ import pyrebase
 import json
 import uuid
 import base64
+import job_sim
 
 def db():
     config = open('firebase.json', 'r').read()
@@ -16,8 +17,8 @@ def check_for_email(email):
     try:
         users = get_db()['users']
         for user in users:
-            if users[user]['email'] == email:
-                return users[user]['uid']
+            if user['email'] == email:
+                return user['uid']
         return False
     except:
         return False
@@ -64,8 +65,8 @@ def validate_user(email, pin):
     try:
         users = get_db()['verification']
         for user in users:
-            if users[user]['email'] == email:
-                if users[user]['pin'] == pin:
+            if user['email'] == email:
+                if user['pin'] == pin:
                     return True
                 else:
                     return False
@@ -93,31 +94,28 @@ def match_jobs(uid):
     jobs = get_db()['jobs']
     top_picks = []
     for job in jobs:
-        # confidence = check_similarity(skills, titles, jobs[job]['title'], jobs[job]['description'])
-        # if confidence > .75:
-        #      top_picks.append(jobs[job])
-        # below is temporary placeholder:
-        for skill in skills:
-            if skill in jobs[job]['description']:
-                top_picks.append(jobs[job])
+        confidence = job_sim.check_similarity(skills, titles, job['title'], job['description'])
+        if confidence > .75:
+            top_picks.append(job)
     return top_picks
 
 class JobScraper:
     def init(self):
         self.link_list = []
-    def add_job(self, link, title, location, description):
+    def add_job(self, link, title, location, description, company):
         self.link_list.append(link)
         safe_link = base64.b64encode(link.encode("ascii")).decode("ascii")
         data = {
             "link": link,
             "title": title,
             "location": location,
-            "description": description
+            "description": description,
+            "company": company
         }
         db().child('jobs').child(safe_link).set(data)
     def remove_jobs(self):
         jobs = get_db()['jobs']
         for job in jobs:
-            if jobs[job]['link'] not in self.link_list:
-                safe_link = base64.b64encode(jobs[job]['link'].encode("ascii")).decode("ascii")
+            if job['link'] not in self.link_list:
+                safe_link = base64.b64encode(job['link'].encode("ascii")).decode("ascii")
                 db().child('jobs').child(safe_link).remove()
