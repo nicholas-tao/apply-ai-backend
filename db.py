@@ -28,8 +28,8 @@ def get_resume_data(uid):
     try:
         users = get_db()['users']
         for user in users:
-            if user['uid'] == uid:
-                return user['resume_data']
+            if users[user]['uid'] == uid:
+                return users[user]['resume_data']
         return False
     except:
         return False
@@ -65,8 +65,8 @@ def validate_user(email, pin):
     try:
         users = get_db()['verification']
         for user in users:
-            if user['email'] == email:
-                if user['pin'] == pin:
+            if users[user]['email'] == email:
+                if users[user]['pin'] == pin:
                     return True
                 else:
                     return False
@@ -94,9 +94,9 @@ def match_jobs(uid):
     jobs = get_db()['jobs']
     top_picks = []
     for job in jobs:
-        confidence = job_sim.check_similarity(skills, titles, job['title'], job['description'])
+        confidence = job_sim.check_similarity(skills, titles, jobs[job]['title'], jobs[job]['description'])
         if confidence > .75:
-            top_picks.append(job)
+            top_picks.append(jobs[job])
     return top_picks
 
 class JobScraper:
@@ -116,6 +116,6 @@ class JobScraper:
     def remove_jobs(self):
         jobs = get_db()['jobs']
         for job in jobs:
-            if job['link'] not in self.link_list:
-                safe_link = base64.b64encode(job['link'].encode("ascii")).decode("ascii")
+            if jobs[job]['link'] not in self.link_list:
+                safe_link = base64.b64encode(jobs[job]['link'].encode("ascii")).decode("ascii")
                 db().child('jobs').child(safe_link).remove()
