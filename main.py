@@ -10,6 +10,7 @@ import hash
 import random
 import time
 from resume_parser import ResumeParser
+import apply
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -96,11 +97,20 @@ def get_jobs():
     huid = request.args.get('uid', default='nope')
     uid = hash.database_safe_hash(huid)
     if get_user(uid):
-        # parse stuff whatever and return job stuff
         return jsonify({'success': True})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
-        
 
+@app.route('/apply', methods=['POST'])
+def auto_apply():
+    huid = request.form.get('uid', default='nope')
+    uid = hash.database_safe_hash(huid)
+    links = request.form.get('links', default='google.com').split(', ')
+    if get_user(uid):
+        for link in links:
+            apply.submit(uid, link)
+        plural = '' if len(links) == 1 else 's'
+        return jsonify({'success': True, 'message': 'You have successfully applied to {} job{}.'.format(len(links), plural)})
+    return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5002)

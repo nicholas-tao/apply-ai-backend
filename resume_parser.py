@@ -102,12 +102,16 @@ class ResumeParser:
                 organizations.append(org)
         return organizations
 
+    def extract_jobs(self):
+
+        return {'jobs': None}
+
     def extract_socials(self):
         socials = dict()
         linkedin = re.findall("linkedin.com/[a-z,A-Z,0-9,\-,\\,\/]*", self.resume_text)
         github = re.findall("[https://]*github.com[a-z,A-Z,0-9,\-,\\,\/]*", self.resume_text)
-        socials = {'linkedin':linkedin[0],
-                   'github':github[0]}
+        socials = {'linkedin':linkedin[0] if len(linkedin)>0 else None,
+                   'github':github[0] if len(github)>0 else None}
         return socials
 
 
@@ -119,5 +123,6 @@ class ResumeParser:
         self.resume['degree'] = self.extract_degree()
         self.resume['locations'] = self.extract_locations()
         self.resume['skills'] = self.extract_skills()
+        self.resume['jobs'] = self.extract_jobs()
         self.resume['socials'] = self.extract_socials()
         return json.dumps(self.resume, indent=4)
