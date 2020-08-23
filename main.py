@@ -11,6 +11,7 @@ import random
 import time
 from resume_parser import ResumeParser
 import apply
+import json
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -73,9 +74,9 @@ def resume_upload():
 
 @app.route('/update', methods=['POST'])
 def update_resume():
-    huid = request.form.get('uid', default='nope')
+    huid = request.form.get('uid')
     uid = hash.database_safe_hash(huid)
-    data = request.form.get('data', default={})
+    data = json.loads(request.form.get('data'))
     if get_user(uid):
         update_user(uid, data)
         return jsonify({'success': True, 'message': 'User data has been updated.'})
