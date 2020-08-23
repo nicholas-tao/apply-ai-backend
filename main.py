@@ -47,8 +47,8 @@ def get_email():
         if validate_user(email, pin):
             uid = uuid.uuid4().hex
             create_user(uid, email)
-            existing_email(email, huid)
             huid = hash.user_safe_hash(uid)
+            existing_email(email, huid)
             return jsonify({'success': True, 'uid': huid})
         return jsonify({'success': False, 'message': '6 digit pin does not match. Please try again.'})
 
