@@ -108,7 +108,7 @@ class ResumeParser:
         url = "https://jobs.lever.co/parseResume"
         payload = {}
         files = [
-        ('resume', self.fo)
+        ('resume', open(self.resume_file, 'rb'))
         ]
         headers= {}
 
@@ -176,4 +176,4 @@ class ResumeParser:
             self.resume['socials'] = self.extract_socials()
         except:
             self.resume['socials'] = ''
-        return json.dumps(self.resume, indent=4)
+        return self.resume
