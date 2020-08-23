@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 import uuid
 import filestorage
 import re
-from db import get_user, create_user, check_for_email, add_to_user, update_user, get_resume_data, new_user, validate_user
+from db import get_user, create_user, check_for_email, add_to_user, update_user, get_resume_data, new_user, validate_user, match_jobs
 from mail import new_email, existing_email, new_jobs
 import hash
 import random
@@ -98,7 +98,7 @@ def get_jobs():
     huid = request.args.get('uid', default='nope')
     uid = hash.database_safe_hash(huid)
     if get_user(uid):
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'data': match_jobs(uid)})
     return jsonify({'success': False, 'message': 'Invalid user ID.'})
 
 @app.route('/apply', methods=['POST'])
