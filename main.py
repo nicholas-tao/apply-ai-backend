@@ -66,8 +66,10 @@ def resume_upload():
             original_name = secure_filename(file.filename)
             file_name = uuid.uuid4().hex + '.pdf'
             file.save('uploads/' + file_name)
-            time.sleep(1000)
-            resume_data = ResumeParser('uploads/' + file_name).extract_data()
+            try:
+                resume_data = ResumeParser('uploads/' + file_name).extract_data()
+            except:
+                resume_data = {}
             file_url = filestorage.upload(file_name)
             add_to_user(uid, original_name, file_url, resume_data)
             return jsonify({'success': True, 'data': resume_data})
