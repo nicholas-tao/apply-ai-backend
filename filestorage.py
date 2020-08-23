@@ -7,5 +7,5 @@ def upload(filename):
     bucket = client.get_bucket('apply-ai-resumes')
     blob = bucket.blob(filename)
     blob.upload_from_filename('uploads/' + filename)
-    os.remove('uploads/' + filename)
+    # os.remove('uploads/' + filename)
     return blob.public_url
