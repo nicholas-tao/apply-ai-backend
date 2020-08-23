@@ -113,7 +113,7 @@ class ResumeParser:
         headers= {}
 
         response = requests.request("POST", url, headers=headers, data = payload, files = files)
-
+        print(response.text)
         try:
             jobs = response.json()['positions']
             positions = []
